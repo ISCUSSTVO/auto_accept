@@ -35,4 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['C:\\Users\\nikis\\Desktop\\auto_accept\\zxc.ico'],
 )
