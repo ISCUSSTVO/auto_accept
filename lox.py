@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     # Загружаем изображение кнопки
     button_image_path = r'C:\Users\nikis\Desktop\auto_accept\accept_button.png'
+    target_image = r'C:\Users\nikis\Desktop\auto_accept\target.png'
     
     # Проверка существования файла
     if not os.path.isfile(button_image_path):
@@ -52,22 +53,16 @@ if __name__ == "__main__":
 
     # Создаем объект для захвата экрана
     sct = mss.mss()
-
-    # Переменная для отслеживания состояния
     button_found = False
 
-    # Функция для обновления сообщений в текстовом поле
     def update_message(message):
         message_box.config(state=tk.NORMAL)  # Разрешаем редактирование
         message_box.insert(tk.END, message + "\n")  # Добавляем сообщение
         message_box.config(state=tk.DISABLED)  # Запрещаем редактирование
-
-    # Создаем главное окно приложения
+        
     root = tk.Tk()
     root.title("хуй")
-    root.geometry("300x200")
-
-    # Создаем текстовое поле для сообщений
+    root.geometry("500x200")
     message_box = tk.Text(root, state=tk.DISABLED)
     message_box.pack(expand=True, fill=tk.BOTH)
     update_message("Поиск")
@@ -75,7 +70,7 @@ if __name__ == "__main__":
     # Основной цикл программы
     def main_loop():
         global button_found
-        # Захватываем часть экрана
+
         monitor = sct.monitors[1]  # Используйте нужный монитор, если у вас несколько
         screenshot = sct.grab(monitor)
 
@@ -88,21 +83,36 @@ if __name__ == "__main__":
         threshold = 0.8  # Порог для совпадения
         loc = np.where(result >= threshold)
 
+        # Загружаем целевое изображение
+        target_image_cv = cv2.imread(target_image)  # Загрузка целевого изображения
+        if target_image_cv is None:
+            print(f"Ошибка: не удалось загрузить изображение '{target_image}'. Проверьте путь к файлу.")
+            return
+
+        result_target = cv2.matchTemplate(screenshot_cv, target_image_cv, cv2.TM_CCOEFF_NORMED)
+        threshold_target = 0.8  # Порог для совпадения целевой картинки
+        loc_target = np.where(result_target >= threshold_target)
+
         # Если кнопка найдена
         if loc[0].size > 0 and not button_found:
-            update_message("Нажал")
-            pyautogui.press('enter')
-            button_found = True  # Установим флаг, чтобы не нажимать Enter повторно
+            update_message("Кнопка найдена! Нажимаем Enter каждую секунду...")
+            button_found = True
 
-        # Если кнопка не найдена, сбрасываем флаг и продолжаем искать
-        elif loc[0].size == 0:
-            if button_found:
-                update_message("Поиск")
-                button_found = False  # Сбрасываем флаг, чтобы можно было снова нажать Enter, если кнопка появится
+            # Нажимаем Enter каждые 1 секунду, пока не появится целевая картинка
+            while button_found and loc_target[0].size == 0:
+                pyautogui.press('enter')  # Нажимаем Enter
+                time.sleep(1)  # Ждем 1 секунду
+
+            if loc_target[0].size > 0:
+                update_message("Целевая картинка найдена! Остановка нажатий.")
+
+    # Если целевая картинка найдена, сбрасываем состояние
+        elif loc_target[0].size > 0:
+            button_found = False
 
         # Ждем немного перед следующей проверкой
         root.after(1000, main_loop)  # Запускаем функцию снова через 1000 мс (1 секунда)
 
-# Запускаем главный цикл приложения
-main_loop()
-root.mainloop()
+        # Запускаем главный цикл приложения
+    main_loop()
+    root.mainloop()
