@@ -1,5 +1,6 @@
 import asyncio
 import threading
+from turtle import back
 from aiogram import Bot, Dispatcher
 import os
 import cv2
@@ -36,7 +37,7 @@ def build_executable():
     ])
 
 def update_message(message):
-    message_box.config(state=tk.NORMAL)
+    message_box.config(state=tk.NORMAL,foreground='blue')
     message_box.insert(tk.END, message + "\n")
     message_box.see(tk.END)
     message_box.config(state=tk.DISABLED)
@@ -89,7 +90,7 @@ def start_async_loop():
 
 if __name__ == "__main__":
     #global stop_button
-    #build_executable()
+    build_executable()
 
     button_image_path = r'C:\Users\nikis\Desktop\auto_accept\accept_button.png'
     
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     root.title("auto_accept")
     root.geometry("300x300")
 
-    stop_button = tk.Button(root, text='Стоп', command =start_stop ,width=100)
+    stop_button = tk.Button(root, text='Стоп', command =start_stop ,width=100, foreground='red', background='black')
     stop_button.pack()
 
     message_box = tk.Text(root, state=tk.DISABLED)
