@@ -1,4 +1,5 @@
 import asyncio
+from pickletools import pyunicode
 import threading
 import time
 from aiogram import F, Bot, Dispatcher, types
@@ -27,7 +28,7 @@ async def on_startup():
     print("Бот запущен")
 ###################################################     Функции программы       ################################################
 loop = asyncio.new_event_loop() 
-
+button_found = False
 running = True
 def build_executable():
     pyinstaller_path = r'C:\Users\nikis\Desktop\auto_accept\.venv\Scripts\pyinstaller.exe'
@@ -57,27 +58,27 @@ def start_stop():
     
     if running:
         button_found = False
-        update_message('Запуск...')
+        update_message('.')
         asyncio.run_coroutine_threadsafe(main_loop(), loop)
     else:
-        update_message('Остановка...')
+        update_message('/')
 
 
 def start_game():
-    mouse.move(1700,1030)
-    mouse.click()
-    time.sleep(0.2)
-    mouse.click()
+    pyautogui.click(1700, 1030, 2 ,0.2)
+
+
+async def run_bot():
+    # Здесь должен быть код для инициализации и запуска бота
+
+    dp.startup.register(on_startup)
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 ###################################################     Скрипт       ################################################
 async def main_loop():
     global button_found
     sct = mss.mss()
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
-    dp.startup.register(on_startup)
-
-
 
     while True:
         screenshot = sct.grab(sct.monitors[1])
@@ -103,13 +104,27 @@ async def main_loop():
 
 
 ###################################################     Запуск       ################################################
-def run_asyncio_loop():
-    asyncio.run(main_loop())
-
-def start_async_loop():
+async def run_event_loop():
     asyncio.set_event_loop(loop)
+    await run_bot()
     loop.run_forever()
 
+def start_gui():
+    global message_box
+    global stop_button
+    root = tk.Tk()
+    root.title("auto_accept")
+    root.geometry("300x300")
+
+
+    stop_button = tk.Button(root, text='Стоп', command=start_stop, width=100, foreground='red', background='black')
+    stop_button.pack()
+
+    message_box = tk.Text(root, state=tk.DISABLED)
+    message_box.pack(expand=True, fill=tk.BOTH)
+    update_message("Поиск")
+    
+    root.mainloop()
 
 if __name__ == "__main__":
     #build_executable()
@@ -125,23 +140,9 @@ if __name__ == "__main__":
     if button_image is None:
         print("Ошибка: не удалось загрузить изображение 'accept_button.png'. Проверьте путь к файлу.")
         exit(1)
-
     button_height, button_width, _ = button_image.shape
 
+    threading.Thread(target=lambda: loop.run_until_complete(run_event_loop()), daemon=True).start()
     
-
-    root = tk.Tk()
-    root.title("auto_accept")
-    root.geometry("300x300")
-
-    stop_button = tk.Button(root, text='Стоп', command =start_stop ,width=100, foreground='red', background='black')
-    stop_button.pack()
-
-    message_box = tk.Text(root, state=tk.DISABLED)
-    message_box.pack(expand=True, fill=tk.BOTH)
-    update_message("Поиск")
-    button_found = False
-    # Запускаем асинхронный цикл в отдельном потоке
-    threading.Thread(target=run_asyncio_loop, daemon=True).start()
-
-    root.mainloop()
+    start_gui()
+    
