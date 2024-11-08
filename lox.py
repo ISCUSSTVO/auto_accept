@@ -1,26 +1,34 @@
 import asyncio
 import threading
-from turtle import back
-from aiogram import Bot, Dispatcher
+import time
+from aiogram import F, Bot, Dispatcher, types
+import mouse
 import os
 import cv2
 import numpy as np
 import pyautogui
 import mss
-import time
 import tkinter as tk
 import subprocess
-
-
-bot = Bot(token='7697418130:AAFY4SalSyHyIhSKrh8ubeDaU4GlMHjhsas')  # Замените на ваш токен
-dp = Dispatcher()  # Используйте именованный аргумент для storage
-loop = asyncio.new_event_loop() 
-
-running = True
+#############################################          Бот         #############################################################
+bot = Bot(token='7697418130:AAFY4SalSyHyIhSKrh8ubeDaU4GlMHjhsas') 
+dp = Dispatcher()  
 
 async def send_telegram_message(message):
     await bot.send_message(chat_id=1020323448, text=message)
 
+@dp.message(F.text.lower().contains('г'))
+async def msg(message: types.Message):
+    start_game()
+    await message.answer('ищу игру')
+
+
+async def on_startup():
+    print("Бот запущен")
+###################################################     Функции программы       ################################################
+loop = asyncio.new_event_loop() 
+
+running = True
 def build_executable():
     pyinstaller_path = r'C:\Users\nikis\Desktop\auto_accept\.venv\Scripts\pyinstaller.exe'
     icon_path = r'C:\Users\nikis\Desktop\auto_accept\zxc.ico'
@@ -55,10 +63,22 @@ def start_stop():
         update_message('Остановка...')
 
 
+def start_game():
+    mouse.move(1700,1030)
+    mouse.click()
+    time.sleep(0.2)
+    mouse.click()
+
+###################################################     Скрипт       ################################################
 async def main_loop():
     global button_found
-
     sct = mss.mss()
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    dp.startup.register(on_startup)
+
+
+
     while True:
         screenshot = sct.grab(sct.monitors[1])
         screenshot_np = np.array(screenshot)
@@ -81,6 +101,8 @@ async def main_loop():
 
         await asyncio.sleep(0.1)  # Пауза в 500 мс
 
+
+###################################################     Запуск       ################################################
 def run_asyncio_loop():
     asyncio.run(main_loop())
 
@@ -88,9 +110,9 @@ def start_async_loop():
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
+
 if __name__ == "__main__":
-    #global stop_button
-    build_executable()
+    #build_executable()
 
     button_image_path = r'C:\Users\nikis\Desktop\auto_accept\accept_button.png'
     
