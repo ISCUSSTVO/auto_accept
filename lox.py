@@ -93,7 +93,7 @@ async def main_loop():
             if not button_found:
                 update_message("Нажал")
                 await send_telegram_message('Я нашлась')
-                pyautogui.press('enter', 5 )
+                pyautogui.press('enter', 2 )
                 button_found = True
         else:
             if button_found:
@@ -107,7 +107,7 @@ async def main_loop():
 async def run_event_loop():
     asyncio.set_event_loop(loop)
     await run_bot()
-    loop.run_forever()
+
 
 def start_gui():
     global message_box
