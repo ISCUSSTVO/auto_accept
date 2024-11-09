@@ -13,12 +13,21 @@ bot = Bot(token='7697418130:AAFY4SalSyHyIhSKrh8ubeDaU4GlMHjhsas')
 dp = Dispatcher()  
 
 async def send_telegram_message(message):
-    await bot.send_message(chat_id=1020323448, text=message)
+    await bot.send_message(chat_id=1020323448, text =message)
 
 @dp.message(F.text.lower().contains('г'))
 async def msg(message: types.Message):
     start_game()
-    await message.answer('ищу игру')
+    await message.answer('ищу')
+
+@dp.message(F.text.lower().contains('п'))
+async def game(message: types.Message):
+    start_stop()
+    if running:
+        await message.answer('плей')
+    else: 
+        await message.answer('пауза')
+    
 
 
 async def on_startup():
@@ -56,10 +65,10 @@ def start_stop():
     
     if running:
         button_found = False
-        update_message('стою')
+        update_message('иду')
         asyncio.run_coroutine_threadsafe(main_loop(), loop)
     else:
-        update_message('иду')
+        update_message('стою')
 
 def start_game():
     pyautogui.click(1700, 1030, 2 ,0.2)
@@ -90,14 +99,14 @@ async def main_loop():
             if not button_found:
                 update_message("Нажал")
                 await send_telegram_message('Я нашлась')
-                pyautogui.press('enter', 2 )
+                pyautogui.press('enter',2)
                 button_found = True
         else:
             if button_found:
                 update_message("Поиск")
                 button_found = False
 
-        await asyncio.sleep(0.1)  # Пауза в 500 мс
+        await asyncio.sleep(0.2)  # Пауза в 500 мс
 
 
 ###################################################     Запуск       ################################################
